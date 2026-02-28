@@ -5,25 +5,25 @@ import (
 	"time"
 )
 
-type cache[T any] struct {
+type Cache[T any] struct {
 	m        *sync.Map
 	timeout  int
 	timeouts *sync.Map
 }
 
-func (c *cache[T]) newTimeout() int {
+func (c *Cache[T]) newTimeout() int {
 	return int(time.Now().Unix()) + c.timeout
 }
 
-func New[T any](timeout int) *cache[T] {
-	return &cache[T]{
+func New[T any](timeout int) *Cache[T] {
+	return &Cache[T]{
 		m:        &sync.Map{},
 		timeout:  timeout,
 		timeouts: &sync.Map{},
 	}
 }
 
-func (c *cache[T]) Get(objID string, onExists func(string, T), onMiss func(string)) {
+func (c *Cache[T]) Get(objID string, onExists func(string, T), onMiss func(string)) {
 
 	obj, exists := c.m.Load(objID)
 	if exists {
@@ -34,19 +34,19 @@ func (c *cache[T]) Get(objID string, onExists func(string, T), onMiss func(strin
 	onMiss(objID)
 }
 
-func (c *cache[T]) Store(objID string, obj T) {
+func (c *Cache[T]) Store(objID string, obj T) {
 	c.m.Store(objID, obj)
 
 	timeout := int(time.Now().Unix()) + c.timeout
 	c.timeouts.Store(objID, timeout)
 }
 
-func (c *cache[T]) Delete(objID string) {
+func (c *Cache[T]) Delete(objID string) {
 	c.m.Delete(objID)
 	c.timeouts.Delete(objID)
 }
 
-func (c *cache[T]) Start() {
+func (c *Cache[T]) Start() {
 
 	go func() {
 
