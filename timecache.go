@@ -27,8 +27,8 @@ func (c *Cache[T]) Get(objID string, onExists func(string, T), onMiss func(strin
 
 	obj, exists := c.m.Load(objID)
 	if exists {
-		onExists(objID, obj.(T))
 		c.timeouts.Store(objID, c.newTimeout())
+		onExists(objID, obj.(T))
 		return
 	}
 	onMiss(objID)
